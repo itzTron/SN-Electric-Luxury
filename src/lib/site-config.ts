@@ -4,9 +4,9 @@ export const site = {
   tagline: "Powering Your Home with Safety & Trust",
   description:
     "Certified residential, commercial and industrial electrical solutions. Licensed electricians, 24/7 emergency response, and a decade of trusted craftsmanship.",
-  phone: "9876543210",
-  phoneDisplay: "+91 98765 43210",
-  whatsapp: "919876543210",
+  phone: "6297962289",
+  phoneDisplay: "+91 6297 962 289",
+  whatsapp: "916297962289",
   email: "hello@snelectrical.com",
   address: "Service across the region — book on-site visits & emergency call-outs.",
   hours: "Mon–Sat · 8:00 – 20:00 · 24/7 Emergency",
