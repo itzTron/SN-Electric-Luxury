@@ -75,14 +75,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: `${site.name} — ${site.tagline}` },
       { property: "og:description", content: site.description },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: "/logo.png" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: `${site.name} — ${site.tagline}` },
       { name: "twitter:description", content: site.description },
+      { name: "twitter:image", content: "/logo.png" },
       { name: "theme-color", content: "#0066FF" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/logo.png", type: "image/png" },
+      { rel: "shortcut icon", href: "/logo.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/logo.png" },
     ],
     scripts: [
       {
@@ -97,6 +101,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           areaServed: "IN",
           priceRange: "$$",
           openingHours: "Mo-Sa 08:00-20:00",
+          logo: "/logo.png",
+          image: "/logo.png",
         }),
       },
     ],

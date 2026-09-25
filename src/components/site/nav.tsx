@@ -1,11 +1,12 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Menu, X, Moon, Sun, Zap, Globe } from "lucide-react";
+import { Menu, X, Moon, Sun, Globe } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useT } from "@/components/providers/language-provider";
 import { useTheme } from "@/components/providers/theme-provider";
 import { site } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
+import logo from "@/assets/logo.png";
 
 const links = [
   { to: "/", key: "home" as const },
@@ -48,8 +49,14 @@ export function Nav() {
           )}
         >
           <Link to="/" className="flex min-w-0 items-center gap-2.5">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[color:var(--brand)] text-white shadow-[var(--shadow-glow)]">
-              <Zap className="h-4.5 w-4.5" strokeWidth={2.5} />
+            <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-white shadow-[var(--shadow-glow)]">
+              <img
+                src={logo}
+                alt={`${site.name} logo`}
+                className="h-full w-full object-contain"
+                width={36}
+                height={36}
+              />
             </span>
             <span className="hidden text-sm font-bold tracking-tight sm:inline">{site.short}</span>
           </Link>
@@ -129,7 +136,12 @@ export function Nav() {
               className="absolute right-0 top-0 flex h-full w-[86%] max-w-sm flex-col gap-2 bg-background p-6"
             >
               <div className="flex items-center justify-between">
-                <span className="font-display text-lg font-bold">{site.short}</span>
+                <span className="flex items-center gap-2.5">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-white">
+                    <img src={logo} alt="" className="h-full w-full object-contain" width={36} height={36} />
+                  </span>
+                  <span className="font-display text-lg font-bold">{site.short}</span>
+                </span>
                 <button onClick={() => setOpen(false)} aria-label="Close" className="grid h-10 w-10 place-items-center rounded-full border border-border">
                   <X className="h-4 w-4" />
                 </button>

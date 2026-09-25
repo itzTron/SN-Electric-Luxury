@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Zap, Facebook, Instagram, Linkedin, Youtube, Mail, Phone, MapPin } from "lucide-react";
+import { Facebook, Instagram, Linkedin, Youtube, Mail, Phone, MapPin } from "lucide-react";
 import { site, services } from "@/lib/site-config";
 import { useT } from "@/components/providers/language-provider";
+import logo from "@/assets/logo.png";
 
 export function Footer() {
   const { t } = useT();
@@ -12,8 +13,14 @@ export function Footer() {
         <div className="grid gap-12 md:grid-cols-12">
           <div className="md:col-span-4">
             <div className="flex items-center gap-2.5">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[color:var(--brand)] text-white">
-                <Zap className="h-5 w-5" strokeWidth={2.5} />
+              <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-white">
+                <img
+                  src={logo}
+                  alt={`${site.name} logo`}
+                  className="h-full w-full object-contain"
+                  width={40}
+                  height={40}
+                />
               </span>
               <span className="font-display text-lg font-bold">{site.name}</span>
             </div>
