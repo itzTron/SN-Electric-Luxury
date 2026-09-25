@@ -1,0 +1,9 @@
+[build]
+  command = "vite build"
+  publish = "dist"
+
+[build.environment]
+  # TanStack Start builds through Nitro, which defaults to the Cloudflare target
+  # in this project's Lovable vite config. Netlify needs its own preset.
+  NITRO_PRESET = "netlify"
+  NODE_VERSION = "22"
