@@ -1,17 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Calendar, Search } from "lucide-react";
 import { site } from "@/lib/site-config";
 import { PageHero } from "@/components/site/page-hero";
-import residential from "@/assets/project-residential.jpg";
-import wiring from "@/assets/service-wiring.jpg";
-import lighting from "@/assets/service-lighting.jpg";
-import db from "@/assets/service-db.jpg";
-import maintenance from "@/assets/service-maintenance.jpg";
-import industrial from "@/assets/project-industrial.jpg";
+import { defaultPosts } from "@/lib/content/defaults";
+import { formatPostDate, mediaUrl } from "@/lib/content/media";
+import { postsQuery } from "@/lib/content/query-options";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/blog")({
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(postsQuery());
+  },
   head: () => ({
     meta: [
       { title: `Blog — ${site.name}` },
@@ -23,18 +24,18 @@ export const Route = createFileRoute("/blog")({
   component: BlogPage,
 });
 
-const posts = [
-  { slug: "electrical-safety-home", cat: "Electrical Safety", title: "10 electrical safety checks every homeowner should do this year", date: "Jun 12, 2026", img: residential, excerpt: "A field-tested checklist you can run through in an afternoon — from outlets and DB panels to smoke alarms." },
-  { slug: "led-savings", cat: "Energy Saving", title: "How switching to LED cut a client's bill by 42%", date: "May 30, 2026", img: lighting, excerpt: "The numbers, the fixtures used, and how to plan a retrofit that pays back in under 18 months." },
-  { slug: "wiring-guide", cat: "Wiring Guide", title: "Copper vs aluminium wiring — a practical field guide", date: "May 08, 2026", img: wiring, excerpt: "When to use each, common failure modes we see on-site, and current code requirements." },
-  { slug: "db-modernization", cat: "Wiring Guide", title: "Signs your distribution board needs modernizing", date: "Apr 22, 2026", img: db, excerpt: "Warm covers, nuisance trips, missing RCDs — the tell-tale symptoms and what to do about them." },
-  { slug: "amc-value", cat: "Maintenance Tips", title: "What actually happens on a quarterly maintenance visit", date: "Apr 04, 2026", img: maintenance, excerpt: "A behind-the-scenes look at our AMC service — the exact checks, tests and reporting you get." },
-  { slug: "industrial-planning", cat: "Wiring Guide", title: "Planning an industrial power upgrade without downtime", date: "Mar 18, 2026", img: industrial, excerpt: "Sequencing, temporary supplies, and coordination — what separates a good contractor from a great one." },
-];
-
 const cats = ["All", "Electrical Safety", "Energy Saving", "Wiring Guide", "Maintenance Tips"];
 
 function BlogPage() {
+  const { data } = useQuery(postsQuery());
+  const posts = (data ?? defaultPosts).map((post) => ({
+    slug: post.slug,
+    cat: post.category,
+    title: post.title,
+    date: formatPostDate(post.published_at),
+    img: mediaUrl(post.cover_image_path),
+    excerpt: post.excerpt,
+  }));
   const [c, setC] = useState("All");
   const [q, setQ] = useState("");
   const list = posts.filter((p) => (c === "All" || p.cat === c) && p.title.toLowerCase().includes(q.toLowerCase()));

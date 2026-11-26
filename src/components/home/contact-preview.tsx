@@ -1,11 +1,15 @@
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
-import { site } from "@/lib/site-config";
+import { useQuery } from "@tanstack/react-query";
+import { defaultSiteSettings } from "@/lib/content/defaults";
+import { siteSettingsQuery } from "@/lib/content/query-options";
 import { SectionHeading } from "@/components/site/section-heading";
 import { Reveal } from "@/components/site/reveal";
 import { useT } from "@/components/providers/language-provider";
 
 export function ContactPreview() {
   const { t } = useT();
+  const { data: settings } = useQuery(siteSettingsQuery());
+  const site = settings ?? defaultSiteSettings;
 
   return (
     <section className="relative py-24 sm:py-32" id="contact">
@@ -15,8 +19,8 @@ export function ContactPreview() {
         <Reveal className="mx-auto mt-14 max-w-4xl">
           <div className="glass rounded-3xl p-8 sm:p-10">
             <div className="grid gap-6 sm:grid-cols-2">
-              <Row icon={Phone} label={t.common.callNow} value={site.phoneDisplay} href={`tel:${site.phone}`} />
-              <Row icon={MessageCircle} label={t.common.whatsapp} value={site.phoneDisplay} href={`https://wa.me/${site.whatsapp}`} />
+              <Row icon={Phone} label={t.common.callNow} value={site.phone_display} href={`tel:${site.phone}`} />
+              <Row icon={MessageCircle} label={t.common.whatsapp} value={site.phone_display} href={`https://wa.me/${site.whatsapp}`} />
               <Row icon={Mail} label={t.common.email} value={site.email} href={`mailto:${site.email}`} />
               <Row icon={MapPin} label="Hours" value={site.hours} />
             </div>
@@ -28,7 +32,7 @@ export function ContactPreview() {
                   href={`tel:${site.phone}`}
                   className="mt-1 block font-display text-xl font-bold text-[color:var(--brand)]"
                 >
-                  {site.phoneDisplay}
+                  {site.phone_display}
                 </a>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-3">

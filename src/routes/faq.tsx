@@ -1,12 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus, Search } from "lucide-react";
 import { site } from "@/lib/site-config";
 import { PageHero } from "@/components/site/page-hero";
+import { defaultFaqs } from "@/lib/content/defaults";
+import { faqsQuery } from "@/lib/content/query-options";
 
 export const Route = createFileRoute("/faq")({
-  head: () => ({
+  loader: async ({ context }) => ({
+    faqs: await context.queryClient.ensureQueryData(faqsQuery()),
+  }),
+  head: ({ loaderData }) => ({
     meta: [
       { title: `FAQ — ${site.name}` },
       { name: "description", content: "Answers to the most common questions about our electrical services, pricing and warranties." },
@@ -19,10 +25,10 @@ export const Route = createFileRoute("/faq")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "FAQPage",
-          mainEntity: faqs.map((f) => ({
+          mainEntity: (loaderData?.faqs ?? defaultFaqs).map((f) => ({
             "@type": "Question",
-            name: f.q,
-            acceptedAnswer: { "@type": "Answer", text: f.a },
+            name: f.question,
+            acceptedAnswer: { "@type": "Answer", text: f.answer },
           })),
         }),
       },
@@ -31,18 +37,14 @@ export const Route = createFileRoute("/faq")({
   component: FAQPage,
 });
 
-const faqs = [
-  { cat: "General", q: "How quickly can you respond to an emergency?", a: "Our on-call team dispatches within 60 minutes for emergencies in serviced areas, 24/7." },
-  { cat: "General", q: "Are your electricians licensed and insured?", a: "Yes — every technician is fully licensed, certified, and covered by comprehensive liability insurance." },
-  { cat: "Pricing", q: "Do you provide free quotes?", a: "Absolutely. Site visits for quotes are free within our service area and include a written estimate." },
-  { cat: "Pricing", q: "How do you charge — hourly or fixed?", a: "Most jobs are fixed-price after the site assessment; small maintenance jobs use an hourly rate." },
-  { cat: "Warranty", q: "What warranty do you offer?", a: "All installation work is covered by a workmanship warranty ranging from 12 to 24 months, depending on service." },
-  { cat: "Warranty", q: "What if something fails after installation?", a: "We return at no cost during the warranty period to diagnose and repair covered issues." },
-  { cat: "Commercial", q: "Can you handle commercial and industrial projects?", a: "Yes, we deliver end-to-end electrical fit-outs for offices, factories, retail chains and industrial units." },
-  { cat: "Commercial", q: "Do you offer AMC?", a: "We run monthly, quarterly, and annual maintenance contracts tailored to your site." },
-];
-
 function FAQPage() {
+  const { data } = useQuery(faqsQuery());
+  const faqs = (data ?? defaultFaqs).map((row) => ({
+    id: row.id || row.question,
+    cat: row.category ?? "General",
+    q: row.question,
+    a: row.answer,
+  }));
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<number | null>(0);
 

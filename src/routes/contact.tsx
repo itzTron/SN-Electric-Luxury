@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { site } from "@/lib/site-config";
+import { defaultSiteSettings } from "@/lib/content/defaults";
+import { siteSettingsQuery } from "@/lib/content/query-options";
 import { PageHero } from "@/components/site/page-hero";
 
 export const Route = createFileRoute("/contact")({
@@ -16,16 +19,18 @@ export const Route = createFileRoute("/contact")({
 });
 
 function ContactPage() {
+  const { data: settings } = useQuery(siteSettingsQuery());
+  const s = settings ?? defaultSiteSettings;
   return (
     <>
       <PageHero eyebrow="Contact" title="Let's talk." sub="Call us, message us on WhatsApp, or book a site visit. Emergencies answered 24/7." />
 
       <section className="mx-auto max-w-6xl px-4 pb-8 sm:px-6">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card icon={Phone} label="Call" value={site.phoneDisplay} href={`tel:${site.phone}`} accent />
-          <Card icon={MessageCircle} label="WhatsApp" value={site.phoneDisplay} href={`https://wa.me/${site.whatsapp}`} />
-          <Card icon={Mail} label="Email" value={site.email} href={`mailto:${site.email}`} />
-          <Card icon={MapPin} label="Hours" value={site.hours} />
+          <Card icon={Phone} label="Call" value={s.phone_display} href={`tel:${s.phone}`} accent />
+          <Card icon={MessageCircle} label="WhatsApp" value={s.phone_display} href={`https://wa.me/${s.whatsapp}`} />
+          <Card icon={Mail} label="Email" value={s.email} href={`mailto:${s.email}`} />
+          <Card icon={MapPin} label="Hours" value={s.hours} />
         </div>
       </section>
 
@@ -34,23 +39,23 @@ function ContactPage() {
           <div className="flex h-full flex-col justify-center rounded-3xl border border-border bg-card p-8">
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Emergency line</div>
             <a
-              href={`tel:${site.phone}`}
+              href={`tel:${s.phone}`}
               className="mt-1 font-display text-2xl font-bold text-[color:var(--brand)]"
             >
-              {site.phoneDisplay}
+              {s.phone_display}
             </a>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              {site.address}
+              {s.address}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a
-                href={`tel:${site.phone}`}
+                href={`tel:${s.phone}`}
                 className="inline-flex items-center gap-2 rounded-full bg-[color:var(--brand)] px-5 py-3 text-sm font-semibold text-white shadow-[var(--shadow-glow)] transition hover:brightness-110"
               >
                 <Phone className="h-4 w-4" /> Call now
               </a>
               <a
-                href={`https://wa.me/${site.whatsapp}`}
+                href={`https://wa.me/${s.whatsapp}`}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-semibold transition hover:border-[color:var(--brand)] hover:text-[color:var(--brand)]"

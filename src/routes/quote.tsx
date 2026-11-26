@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Paperclip, Send } from "lucide-react";
 import { motion } from "framer-motion";
 import { z } from "zod";
-import { site, services } from "@/lib/site-config";
+import { site } from "@/lib/site-config";
+import { defaultServices } from "@/lib/content/defaults";
+import { servicesQuery } from "@/lib/content/query-options";
 import { PageHero } from "@/components/site/page-hero";
 
 export const Route = createFileRoute("/quote")({
@@ -30,6 +33,8 @@ const schema = z.object({
 });
 
 function QuotePage() {
+  const { data: serviceRows } = useQuery(servicesQuery());
+  const services = (serviceRows ?? defaultServices).map((s) => ({ slug: s.slug, title: s.title_en }));
   const [ok, setOk] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 

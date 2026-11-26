@@ -1,12 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { site } from "@/lib/site-config";
 import { PageHero } from "@/components/site/page-hero";
 import { SectionHeading } from "@/components/site/section-heading";
 import { Reveal } from "@/components/site/reveal";
-import { Award, HeartHandshake, Shield, Sparkles } from "lucide-react";
+import { Award, HeartHandshake, Shield, Sparkles, Zap, type LucideIcon } from "lucide-react";
 import aboutImg from "@/assets/about.jpg";
+import { defaultAboutTimeline, defaultAboutValues, defaultSiteSettings } from "@/lib/content/defaults";
+import { mediaUrl } from "@/lib/content/media";
+import { aboutQuery, siteSettingsQuery } from "@/lib/content/query-options";
 
 export const Route = createFileRoute("/about")({
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(aboutQuery()),
+      context.queryClient.ensureQueryData(siteSettingsQuery()),
+    ]);
+  },
   head: () => ({
     meta: [
       { title: `About — ${site.name}` },
@@ -18,28 +28,31 @@ export const Route = createFileRoute("/about")({
   component: AboutPage,
 });
 
-const timeline = [
-  { y: "2014", t: "Founded", d: "SN Electrical begins with a two-person crew and a promise: no shortcut wiring." },
-  { y: "2017", t: "Commercial launch", d: "First 10,000 sq ft office fit-out delivered on schedule." },
-  { y: "2020", t: "24/7 emergency", d: "Round-the-clock dispatch launches across the region." },
-  { y: "2023", t: "500th project", d: "Team crosses 500 completed installations with 5-star average." },
-  { y: "2026", t: "New workshop", d: "Modern workshop and training facility opens for apprentices." },
-];
-
-const values = [
-  { icon: Shield, t: "Safety first", d: "Every job starts with a risk assessment. Full stop." },
-  { icon: Award, t: "Craftsmanship", d: "We take pride in the work behind the wall, not just the finish." },
-  { icon: HeartHandshake, t: "Honest pricing", d: "Written quotes. No surprise line items. Ever." },
-  { icon: Sparkles, t: "Modern tools", d: "Thermal imaging, insulation testers, calibrated meters." },
-];
+const icons: Record<string, LucideIcon> = { Shield, Award, HeartHandshake, Sparkles, Zap };
 
 function AboutPage() {
+  const { data: about } = useQuery(aboutQuery());
+  const { data: settings } = useQuery(siteSettingsQuery());
+  const siteConfig = settings ?? defaultSiteSettings;
+  const timeline = (about?.timeline ?? defaultAboutTimeline).map((row) => ({
+    id: row.id || row.year,
+    y: row.year,
+    t: row.title,
+    d: row.description,
+  }));
+  const values = (about?.values ?? defaultAboutValues).map((row) => ({
+    id: row.id || row.title,
+    icon: icons[row.icon] ?? Sparkles,
+    t: row.title,
+    d: row.description,
+  }));
+
   return (
     <>
       <PageHero eyebrow="About" title="A decade of powering safer homes and smarter workplaces." sub="Founded on a single principle — do electrical work the way you'd want it done in your own home." />
       <section className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
         <div className="overflow-hidden rounded-[2rem] border border-border">
-          <img src={aboutImg} alt="Our team" className="h-[400px] w-full object-cover sm:h-[560px]" loading="lazy" />
+          <img src={mediaUrl(siteConfig.about_image_path) ?? aboutImg} alt="Our team" className="h-[400px] w-full object-cover sm:h-[560px]" loading="lazy" />
         </div>
       </section>
 
@@ -62,7 +75,7 @@ function AboutPage() {
           <div className="absolute left-4 top-0 bottom-0 w-px bg-border sm:left-1/2" />
           <div className="space-y-10">
             {timeline.map((it, i) => (
-              <Reveal key={it.y} delay={i * 0.05}>
+              <Reveal key={it.id} delay={i * 0.05}>
                 <div className={`relative flex flex-col gap-4 pl-12 sm:flex-row sm:pl-0 ${i % 2 === 0 ? "sm:pr-1/2 sm:text-right" : "sm:pl-1/2"}`}>
                   <div className="absolute left-0 top-1 grid h-8 w-8 place-items-center rounded-full border border-border bg-background text-xs font-bold sm:left-1/2 sm:-translate-x-1/2">
                     <span className="h-2 w-2 rounded-full bg-[color:var(--brand)]" />
@@ -83,7 +96,7 @@ function AboutPage() {
         <SectionHeading eyebrow="Values" title="What we hold ourselves to." align="center" />
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {values.map((v) => (
-            <div key={v.t} className="rounded-3xl border border-border bg-card p-6">
+            <div key={v.id} className="rounded-3xl border border-border bg-card p-6">
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[color:var(--brand)]/10 text-[color:var(--brand)]">
                 <v.icon className="h-5 w-5" />
               </span>

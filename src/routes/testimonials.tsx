@@ -1,10 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Star } from "lucide-react";
 import { site } from "@/lib/site-config";
 import { PageHero } from "@/components/site/page-hero";
 import { Counter } from "@/components/site/counter";
+import { defaultTestimonials } from "@/lib/content/defaults";
+import { testimonialsQuery } from "@/lib/content/query-options";
 
 export const Route = createFileRoute("/testimonials")({
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(testimonialsQuery());
+  },
   head: () => ({
     meta: [
       { title: `Testimonials — ${site.name}` },
@@ -16,16 +22,16 @@ export const Route = createFileRoute("/testimonials")({
   component: TestimonialsPage,
 });
 
-const reviews = [
-  { name: "Priya Sharma", role: "Homeowner", rating: 5, text: "SN Electrical rewired our entire villa in under a week. Immaculate work, transparent pricing, and a genuinely friendly team." },
-  { name: "Arjun Mehta", role: "Ops Manager", rating: 5, text: "Zero downtime, weekend install, perfect documentation. They understand commercial constraints." },
-  { name: "Nadia Rahman", role: "Café Owner", rating: 5, text: "Beautiful ambient lighting design and the DB panel is a work of art." },
-  { name: "Kamal Iqbal", role: "Facility Head", rating: 5, text: "Complex industrial upgrade delivered on time and on budget." },
-  { name: "Sana Ahmed", role: "Homeowner", rating: 5, text: "Emergency call at 11 pm, technician onsite by midnight, problem solved." },
-  { name: "Rohan Das", role: "Property Manager", rating: 5, text: "Consistent quality across three buildings — the go-to team for our portfolio." },
-];
-
 function TestimonialsPage() {
+  const { data } = useQuery(testimonialsQuery());
+  const reviews = (data ?? defaultTestimonials).map((row) => ({
+    id: row.id || row.name,
+    name: row.name,
+    role: row.role ?? "",
+    rating: row.rating,
+    text: row.quote,
+  }));
+
   return (
     <>
       <PageHero eyebrow="Reviews" title="Loved by homeowners, operators, and industrial clients." sub="Every review below comes from a real, completed project. We're proud of every one of them." />
@@ -46,7 +52,7 @@ function TestimonialsPage() {
       <section className="mx-auto max-w-7xl px-4 pb-32 sm:px-6">
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {reviews.map((r) => (
-            <div key={r.name} className="rounded-3xl border border-border bg-card p-7">
+            <div key={r.id} className="rounded-3xl border border-border bg-card p-7">
               <div className="flex gap-0.5">
                 {Array.from({ length: r.rating }).map((_, i) => (
                   <Star key={i} className="h-4 w-4 fill-[color:var(--accent-yellow)] text-[color:var(--accent-yellow)]" />

@@ -1,11 +1,18 @@
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Facebook, Instagram, Linkedin, Youtube, Mail, Phone, MapPin } from "lucide-react";
-import { site, services } from "@/lib/site-config";
 import { useT } from "@/components/providers/language-provider";
+import { defaultServices, defaultSiteSettings } from "@/lib/content/defaults";
+import { mediaUrl } from "@/lib/content/media";
+import { servicesQuery, siteSettingsQuery } from "@/lib/content/query-options";
 import logo from "@/assets/logo.png";
 
 export function Footer() {
   const { t } = useT();
+  const { data: settings } = useQuery(siteSettingsQuery());
+  const { data: serviceRows } = useQuery(servicesQuery());
+  const site = settings ?? defaultSiteSettings;
+  const services = (serviceRows ?? defaultServices).slice(0, 6).map((s) => ({ slug: s.slug, title: s.title_en }));
   return (
     <footer className="relative border-t border-border bg-background">
       <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-[color:var(--brand)] to-transparent" />
@@ -15,7 +22,7 @@ export function Footer() {
             <div className="flex items-center gap-2.5">
               <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-white">
                 <img
-                  src={logo}
+                  src={mediaUrl(site.logo_path) ?? logo}
                   alt={`${site.name} logo`}
                   className="h-full w-full object-contain"
                   width={40}
@@ -75,7 +82,7 @@ export function Footer() {
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-start gap-2.5">
                 <Phone className="mt-0.5 h-4 w-4 shrink-0 text-[color:var(--brand)]" />
-                <a href={`tel:${site.phone}`} className="hover:text-foreground">{site.phoneDisplay}</a>
+                <a href={`tel:${site.phone}`} className="hover:text-foreground">{site.phone_display}</a>
               </li>
               <li className="flex items-start gap-2.5">
                 <Mail className="mt-0.5 h-4 w-4 shrink-0 text-[color:var(--brand)]" />

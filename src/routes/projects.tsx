@@ -1,18 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { site } from "@/lib/site-config";
 import { PageHero } from "@/components/site/page-hero";
-import residential from "@/assets/project-residential.jpg";
-import commercial from "@/assets/project-commercial.jpg";
-import industrial from "@/assets/project-industrial.jpg";
-import lighting from "@/assets/service-lighting.jpg";
-import db from "@/assets/service-db.jpg";
-import wiring from "@/assets/service-wiring.jpg";
-import maintenance from "@/assets/service-maintenance.jpg";
+import { defaultProjects } from "@/lib/content/defaults";
+import { mediaUrl } from "@/lib/content/media";
+import { projectsQuery } from "@/lib/content/query-options";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/projects")({
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(projectsQuery());
+  },
   head: () => ({
     meta: [
       { title: `Projects — ${site.name}` },
@@ -24,17 +24,6 @@ export const Route = createFileRoute("/projects")({
   component: ProjectsPage,
 });
 
-const projects = [
-  { title: "Luxury villa rewire", location: "Riverside Estate", tag: "residential", img: residential },
-  { title: "Corporate HQ fit-out", location: "Central Business Park", tag: "commercial", img: commercial },
-  { title: "Factory power upgrade", location: "Industrial Zone", tag: "industrial", img: industrial },
-  { title: "Ambient lighting design", location: "Boutique Hotel", tag: "commercial", img: lighting },
-  { title: "DB panel modernization", location: "Apartment Complex", tag: "residential", img: db },
-  { title: "Wiring overhaul", location: "Coworking Space", tag: "commercial", img: wiring },
-  { title: "Preventive maintenance AMC", location: "Retail Chain", tag: "commercial", img: maintenance },
-  { title: "Warehouse LED retrofit", location: "Logistics Hub", tag: "industrial", img: lighting },
-];
-
 const filters = [
   { id: "all", label: "All" },
   { id: "residential", label: "Residential" },
@@ -43,6 +32,14 @@ const filters = [
 ] as const;
 
 function ProjectsPage() {
+  const { data } = useQuery(projectsQuery());
+  const projects = (data ?? defaultProjects).map((project) => ({
+    id: project.id || project.slug,
+    title: project.title,
+    location: project.location ?? "",
+    tag: project.category,
+    img: mediaUrl(project.cover_image_path),
+  }));
   const [f, setF] = useState<(typeof filters)[number]["id"]>("all");
   const visible = projects.filter((p) => f === "all" || p.tag === f);
 
@@ -70,7 +67,7 @@ function ProjectsPage() {
             {visible.map((p) => (
               <motion.a
                 layout
-                key={p.title}
+                key={p.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}

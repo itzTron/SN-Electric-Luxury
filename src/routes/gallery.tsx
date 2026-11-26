@@ -1,20 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { site } from "@/lib/site-config";
 import { PageHero } from "@/components/site/page-hero";
-import residential from "@/assets/project-residential.jpg";
-import commercial from "@/assets/project-commercial.jpg";
-import industrial from "@/assets/project-industrial.jpg";
-import lighting from "@/assets/service-lighting.jpg";
-import db from "@/assets/service-db.jpg";
-import wiring from "@/assets/service-wiring.jpg";
-import maintenance from "@/assets/service-maintenance.jpg";
-import hero from "@/assets/hero.jpg";
-import why from "@/assets/why-choose.jpg";
+import { defaultGallery } from "@/lib/content/defaults";
+import { mediaUrl } from "@/lib/content/media";
+import { galleryQuery } from "@/lib/content/query-options";
 import { AnimatePresence, motion } from "framer-motion";
 
 export const Route = createFileRoute("/gallery")({
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(galleryQuery());
+  },
   head: () => ({
     meta: [
       { title: `Gallery — ${site.name}` },
@@ -26,19 +24,14 @@ export const Route = createFileRoute("/gallery")({
   component: GalleryPage,
 });
 
-const images = [
-  { src: residential, span: "row-span-2" },
-  { src: commercial, span: "" },
-  { src: industrial, span: "" },
-  { src: lighting, span: "row-span-2" },
-  { src: db, span: "" },
-  { src: wiring, span: "" },
-  { src: maintenance, span: "" },
-  { src: hero, span: "row-span-2" },
-  { src: why, span: "" },
-];
-
 function GalleryPage() {
+  const { data } = useQuery(galleryQuery());
+  const images = (data ?? defaultGallery).map((row) => ({
+    id: row.id || row.path,
+    src: mediaUrl(row.path) ?? "",
+    alt: row.alt || "Project photo",
+    span: row.tall ? "row-span-2" : "",
+  }));
   const [open, setOpen] = useState<string | null>(null);
   return (
     <>
@@ -47,11 +40,11 @@ function GalleryPage() {
         <div className="grid auto-rows-[220px] grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {images.map((img, i) => (
             <button
-              key={i}
+              key={img.id}
               onClick={() => setOpen(img.src)}
               className={`group relative overflow-hidden rounded-2xl border border-border ${img.span}`}
             >
-              <img src={img.src} alt="" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />
+              <img src={img.src} alt={img.alt} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />
               <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20" />
             </button>
           ))}

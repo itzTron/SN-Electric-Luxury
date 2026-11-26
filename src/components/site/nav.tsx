@@ -2,9 +2,11 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Menu, X, Moon, Sun, Globe } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import { useT } from "@/components/providers/language-provider";
 import { useTheme } from "@/components/providers/theme-provider";
-import { site } from "@/lib/site-config";
+import { defaultSiteSettings } from "@/lib/content/defaults";
+import { siteSettingsQuery } from "@/lib/content/query-options";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/logo.png";
 
@@ -21,6 +23,8 @@ const links = [
 export function Nav() {
   const { t, lang, setLang } = useT();
   const { theme, toggle } = useTheme();
+  const { data: settings } = useQuery(siteSettingsQuery());
+  const site = settings ?? defaultSiteSettings;
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });

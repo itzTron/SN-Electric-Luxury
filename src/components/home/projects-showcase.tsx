@@ -1,24 +1,13 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowUpRight } from "lucide-react";
-import residential from "@/assets/project-residential.jpg";
-import commercial from "@/assets/project-commercial.jpg";
-import industrial from "@/assets/project-industrial.jpg";
-import lighting from "@/assets/service-lighting.jpg";
-import db from "@/assets/service-db.jpg";
-import wiring from "@/assets/service-wiring.jpg";
 import { SectionHeading } from "@/components/site/section-heading";
 import { useT } from "@/components/providers/language-provider";
+import { defaultProjects } from "@/lib/content/defaults";
+import { mediaUrl } from "@/lib/content/media";
+import { projectsQuery } from "@/lib/content/query-options";
 import { cn } from "@/lib/utils";
-
-const projects = [
-  { id: 1, title: "Luxury villa rewire", location: "Riverside Estate", tag: "residential", img: residential, span: "row-span-2" },
-  { id: 2, title: "Corporate HQ fit-out", location: "Central Business Park", tag: "commercial", img: commercial, span: "" },
-  { id: 3, title: "Factory power upgrade", location: "Industrial Zone", tag: "industrial", img: industrial, span: "" },
-  { id: 4, title: "Ambient lighting design", location: "Boutique Hotel", tag: "commercial", img: lighting, span: "" },
-  { id: 5, title: "DB panel modernization", location: "Apartment Complex", tag: "residential", img: db, span: "" },
-  { id: 6, title: "Wiring overhaul", location: "Coworking Space", tag: "commercial", img: wiring, span: "row-span-2" },
-];
 
 const filters = [
   { id: "all", label: "All" },
@@ -29,6 +18,15 @@ const filters = [
 
 export function ProjectsShowcase() {
   const { t } = useT();
+  const { data } = useQuery(projectsQuery());
+  const projects = (data ?? defaultProjects).slice(0, 6).map((project, index) => ({
+    id: project.id || project.slug,
+    title: project.title,
+    location: project.location ?? "",
+    tag: project.category,
+    img: mediaUrl(project.cover_image_path),
+    span: index === 0 || index === 5 ? "row-span-2" : "",
+  }));
   const [filter, setFilter] = useState<(typeof filters)[number]["id"]>("all");
   const visible = projects.filter((p) => filter === "all" || p.tag === filter);
 

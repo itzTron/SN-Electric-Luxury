@@ -1,26 +1,30 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { SectionHeading } from "@/components/site/section-heading";
 import { useT } from "@/components/providers/language-provider";
-
-const testimonials = [
-  { name: "Priya Sharma", role: "Homeowner · Riverside", rating: 5, text: "SN Electrical rewired our entire villa in under a week. Immaculate work, transparent pricing, and a genuinely friendly team. Best trade experience we've had." },
-  { name: "Arjun Mehta", role: "Ops Manager · TechPark", rating: 5, text: "Zero downtime, weekend install, perfect documentation. They understand commercial constraints better than any electrical contractor we've worked with." },
-  { name: "Nadia Rahman", role: "Café Owner", rating: 5, text: "Beautiful ambient lighting design and the DB panel is a work of art. Customers keep asking who did the wiring — that never happens." },
-  { name: "Kamal Iqbal", role: "Facility Head · Textile Mill", rating: 5, text: "Complex industrial upgrade delivered on time and on budget. Their safety protocols are next-level." },
-  { name: "Sana Ahmed", role: "Homeowner", rating: 5, text: "Emergency call at 11 pm, technician onsite by midnight, problem solved. Life-savers." },
-];
+import { defaultTestimonials } from "@/lib/content/defaults";
+import { testimonialsQuery } from "@/lib/content/query-options";
 
 export function Testimonials() {
   const { t } = useT();
+  const { data } = useQuery(testimonialsQuery());
+  const testimonials = (data ?? defaultTestimonials).map((row) => ({
+    name: row.name,
+    role: row.role ?? "",
+    rating: row.rating,
+    text: row.quote,
+  }));
   const [i, setI] = useState(0);
   useEffect(() => {
+    if (testimonials.length === 0) return;
     const id = setInterval(() => setI((v) => (v + 1) % testimonials.length), 6000);
     return () => clearInterval(id);
-  }, []);
+  }, [testimonials.length]);
 
-  const item = testimonials[i];
+  const item = testimonials[i % Math.max(1, testimonials.length)];
+  if (!item) return null;
 
   return (
     <section className="relative overflow-hidden py-24 sm:py-32">

@@ -3,6 +3,7 @@ import {
   Outlet,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
   ScriptOnce,
@@ -16,7 +17,10 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LanguageProvider } from "@/components/providers/language-provider";
 import { Nav } from "@/components/site/nav";
 import { Footer } from "@/components/site/footer";
-import { site } from "@/lib/site-config";
+import { Toaster } from "@/components/ui/sonner";
+import { defaultSiteSettings } from "@/lib/content/defaults";
+import { mediaUrl } from "@/lib/content/media";
+import { siteSettingsQuery } from "@/lib/content/query-options";
 
 function NotFoundComponent() {
   return (
@@ -64,49 +68,56 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: `${site.name} — ${site.tagline}` },
-      { name: "description", content: site.description },
-      { name: "author", content: site.name },
-      { property: "og:site_name", content: site.name },
-      { property: "og:title", content: `${site.name} — ${site.tagline}` },
-      { property: "og:description", content: site.description },
-      { property: "og:type", content: "website" },
-      { property: "og:image", content: "/logo.png" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: `${site.name} — ${site.tagline}` },
-      { name: "twitter:description", content: site.description },
-      { name: "twitter:image", content: "/logo.png" },
-      { name: "theme-color", content: "#0066FF" },
-    ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/logo.png", type: "image/png" },
-      { rel: "shortcut icon", href: "/logo.png", type: "image/png" },
-      { rel: "apple-touch-icon", href: "/logo.png" },
-    ],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "LocalBusiness",
-          name: site.name,
-          description: site.description,
-          telephone: site.phoneDisplay,
-          email: site.email,
-          areaServed: "IN",
-          priceRange: "$$",
-          openingHours: "Mo-Sa 08:00-20:00",
-          logo: "/logo.png",
-          image: "/logo.png",
-        }),
-      },
-    ],
+  loader: async ({ context }) => ({
+    settings: await context.queryClient.ensureQueryData(siteSettingsQuery()),
   }),
+  head: ({ loaderData }) => {
+    const settings = loaderData?.settings ?? defaultSiteSettings;
+    const image = mediaUrl(settings.og_image_path) ?? "/logo.png";
+    return {
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        { title: `${settings.name} — ${settings.tagline}` },
+        { name: "description", content: settings.description },
+        { name: "author", content: settings.name },
+        { property: "og:site_name", content: settings.name },
+        { property: "og:title", content: `${settings.name} — ${settings.tagline}` },
+        { property: "og:description", content: settings.description },
+        { property: "og:type", content: "website" },
+        { property: "og:image", content: image },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: `${settings.name} — ${settings.tagline}` },
+        { name: "twitter:description", content: settings.description },
+        { name: "twitter:image", content: image },
+        { name: "theme-color", content: "#0066FF" },
+      ],
+      links: [
+        { rel: "stylesheet", href: appCss },
+        { rel: "icon", href: "/logo.png", type: "image/png" },
+        { rel: "shortcut icon", href: "/logo.png", type: "image/png" },
+        { rel: "apple-touch-icon", href: "/logo.png", type: "image/png" },
+      ],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            name: settings.name,
+            description: settings.description,
+            telephone: settings.phone_display,
+            email: settings.email,
+            areaServed: "IN",
+            priceRange: "$$",
+            openingHours: "Mo-Sa 08:00-20:00",
+            logo: mediaUrl(settings.logo_path) ?? "/logo.png",
+            image: mediaUrl(settings.hero_image_path) ?? "/logo.png",
+          }),
+        },
+      ],
+    };
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
@@ -132,17 +143,28 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <LanguageProvider>
-          <div className="flex min-h-screen flex-col">
-            <Nav />
-            <main className="flex-1">
+          {isAdmin ? (
+            <>
               <Outlet />
-            </main>
-            <Footer />
-          </div>
+              <Toaster position="top-right" richColors />
+            </>
+          ) : (
+            <div className="flex min-h-screen flex-col">
+              <Nav />
+              <main className="flex-1">
+                <Outlet />
+              </main>
+              <Footer />
+              <Toaster position="top-right" richColors />
+            </div>
+          )}
         </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>

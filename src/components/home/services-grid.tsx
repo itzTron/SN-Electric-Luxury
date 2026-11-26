@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   ArrowUpRight,
@@ -14,7 +15,8 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import { services } from "@/lib/site-config";
+import { defaultServices } from "@/lib/content/defaults";
+import { servicesQuery } from "@/lib/content/query-options";
 import { SectionHeading } from "@/components/site/section-heading";
 import { Reveal } from "@/components/site/reveal";
 import { useT } from "@/components/providers/language-provider";
@@ -24,7 +26,14 @@ const icons: Record<string, LucideIcon> = {
 };
 
 export function ServicesGrid() {
-  const { t } = useT();
+  const { t, lang } = useT();
+  const { data } = useQuery(servicesQuery());
+  const services = (data ?? defaultServices).map((service) => ({
+    slug: service.slug,
+    icon: service.icon,
+    title: lang === "bn" && service.title_bn ? service.title_bn : service.title_en,
+    desc: lang === "bn" && service.desc_bn ? service.desc_bn : service.desc_en,
+  }));
   return (
     <section className="relative py-24 sm:py-32" id="services">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">

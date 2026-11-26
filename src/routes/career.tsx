@@ -1,11 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Plus, Upload } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { site } from "@/lib/site-config";
 import { PageHero } from "@/components/site/page-hero";
+import { defaultJobOpenings, defaultJobPerks } from "@/lib/content/defaults";
+import { jobOpeningsQuery, jobPerksQuery } from "@/lib/content/query-options";
 
 export const Route = createFileRoute("/career")({
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(jobPerksQuery()),
+      context.queryClient.ensureQueryData(jobOpeningsQuery()),
+    ]);
+  },
   head: () => ({
     meta: [
       { title: `Careers — ${site.name}` },
@@ -17,22 +26,17 @@ export const Route = createFileRoute("/career")({
   component: CareerPage,
 });
 
-const perks = [
-  { t: "Competitive pay", d: "Above-market base plus performance bonuses." },
-  { t: "Training & certifications", d: "Sponsored courses and paid certifications." },
-  { t: "Modern tools", d: "Best-in-class equipment, no cutting corners." },
-  { t: "Safety-first culture", d: "Zero tolerance for shortcuts on protective work." },
-];
-
-const roles = [
-  { t: "Senior Electrician", loc: "On-site", type: "Full-time" },
-  { t: "Commercial Project Lead", loc: "On-site", type: "Full-time" },
-  { t: "Apprentice Electrician", loc: "On-site", type: "Apprenticeship" },
-  { t: "Estimator / Quantity Surveyor", loc: "Hybrid", type: "Full-time" },
-];
-
 function CareerPage() {
   const [open, setOpen] = useState<number | null>(null);
+  const { data: perkData } = useQuery(jobPerksQuery());
+  const { data: roleData } = useQuery(jobOpeningsQuery());
+  const perks = (perkData ?? defaultJobPerks).map((row) => ({ t: row.title, d: row.description }));
+  const roles = (roleData ?? defaultJobOpenings).map((row) => ({
+    id: row.id || row.title,
+    t: row.title,
+    loc: row.location ?? "",
+    type: row.employment_type,
+  }));
   return (
     <>
       <PageHero eyebrow="Careers" title="Build a career where craft still matters." sub="We're growing our licensed team — apprentices to project leads. If you take pride in the work behind the wall, come talk to us." />
@@ -55,7 +59,7 @@ function CareerPage() {
           {roles.map((r, i) => {
             const isOpen = open === i;
             return (
-              <div key={r.t}>
+              <div key={r.id}>
                 <button onClick={() => setOpen(isOpen ? null : i)} className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left">
                   <div>
                     <div className="font-semibold">{r.t}</div>
@@ -87,7 +91,7 @@ function CareerPage() {
             <input required type="email" maxLength={200} placeholder="Email" className="h-11 rounded-full border border-border bg-secondary/30 px-4 text-sm outline-none focus:border-[color:var(--brand)]" />
             <input required maxLength={30} placeholder="Phone" className="h-11 rounded-full border border-border bg-secondary/30 px-4 text-sm outline-none focus:border-[color:var(--brand)]" />
             <select className="h-11 rounded-full border border-border bg-secondary/30 px-4 text-sm outline-none focus:border-[color:var(--brand)]">
-              {roles.map((r) => <option key={r.t}>{r.t}</option>)}
+              {roles.map((r) => <option key={r.id}>{r.t}</option>)}
             </select>
             <textarea maxLength={1000} rows={4} placeholder="Tell us a bit about your experience" className="rounded-2xl border border-border bg-secondary/30 p-4 text-sm outline-none focus:border-[color:var(--brand)] sm:col-span-2" />
             <label className="flex items-center gap-3 rounded-full border border-dashed border-border bg-secondary/30 px-4 py-3 text-sm sm:col-span-2">

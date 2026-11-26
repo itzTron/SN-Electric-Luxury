@@ -1,9 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { services, site } from "@/lib/site-config";
+import { useQuery } from "@tanstack/react-query";
+import { site } from "@/lib/site-config";
 import { PageHero } from "@/components/site/page-hero";
 import { ArrowUpRight } from "lucide-react";
+import { defaultServices } from "@/lib/content/defaults";
+import { servicesQuery } from "@/lib/content/query-options";
 
 export const Route = createFileRoute("/services")({
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(servicesQuery());
+  },
   head: () => ({
     meta: [
       { title: `Services — ${site.name}` },
@@ -16,6 +22,13 @@ export const Route = createFileRoute("/services")({
 });
 
 function ServicesPage() {
+  const { data } = useQuery(servicesQuery());
+  const services = (data ?? defaultServices).map((service) => ({
+    slug: service.slug,
+    icon: service.icon,
+    title: service.title_en,
+    desc: service.desc_en,
+  }));
   return (
     <>
       <PageHero eyebrow="Services" title="Ten specialist service lines, one licensed team." sub="From a single fan installation to full building fit-outs — engineered, warrantied, and cleanly delivered." />

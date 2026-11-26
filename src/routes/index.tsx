@@ -1,4 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  faqsQuery,
+  postsQuery,
+  projectsQuery,
+  servicesQuery,
+  testimonialsQuery,
+} from "@/lib/content/query-options";
 import { Hero } from "@/components/home/hero";
 import { TrustBar } from "@/components/home/trust-bar";
 import { ServicesGrid } from "@/components/home/services-grid";
@@ -11,6 +18,15 @@ import { BlogPreview } from "@/components/home/blog-preview";
 import { ContactPreview } from "@/components/home/contact-preview";
 
 export const Route = createFileRoute("/")({
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(servicesQuery()),
+      context.queryClient.ensureQueryData(projectsQuery()),
+      context.queryClient.ensureQueryData(testimonialsQuery()),
+      context.queryClient.ensureQueryData(faqsQuery()),
+      context.queryClient.ensureQueryData(postsQuery()),
+    ]);
+  },
   component: Index,
 });
 

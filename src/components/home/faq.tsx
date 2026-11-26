@@ -1,20 +1,16 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus, Search } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { SectionHeading } from "@/components/site/section-heading";
 import { useT } from "@/components/providers/language-provider";
-
-const faqs = [
-  { q: "How quickly can you respond to an emergency?", a: "Our on-call team dispatches within 60 minutes for emergencies in serviced areas, 24/7." },
-  { q: "Are your electricians licensed and insured?", a: "Yes — every technician is fully licensed, certified, and covered by comprehensive liability insurance." },
-  { q: "Do you provide free quotes?", a: "Absolutely. Site visits for quotes are free within our service area and include a written estimate." },
-  { q: "What warranty do you offer?", a: "All installation work is covered by a workmanship warranty ranging from 12 to 24 months, depending on service." },
-  { q: "Can you handle commercial and industrial projects?", a: "Yes, we deliver end-to-end electrical fit-outs for offices, factories, retail chains and industrial units." },
-  { q: "Do you offer maintenance contracts (AMC)?", a: "We run monthly, quarterly, and annual maintenance contracts tailored to residential and commercial clients." },
-];
+import { defaultFaqs } from "@/lib/content/defaults";
+import { faqsQuery } from "@/lib/content/query-options";
 
 export function FAQ() {
   const { t } = useT();
+  const { data } = useQuery(faqsQuery());
+  const faqs = (data ?? defaultFaqs).slice(0, 6).map((row) => ({ q: row.question, a: row.answer }));
   const [open, setOpen] = useState<number | null>(0);
   const [q, setQ] = useState("");
   const filtered = faqs.filter((f) => f.q.toLowerCase().includes(q.toLowerCase()));

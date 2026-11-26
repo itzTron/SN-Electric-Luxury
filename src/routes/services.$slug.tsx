@@ -1,16 +1,19 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Check } from "lucide-react";
-import { services, site } from "@/lib/site-config";
+import { site } from "@/lib/site-config";
+import { servicesQuery } from "@/lib/content/query-options";
 import { PageHero } from "@/components/site/page-hero";
 import { SectionHeading } from "@/components/site/section-heading";
 import { Reveal } from "@/components/site/reveal";
 import serviceImg from "@/assets/service-db.jpg";
 
 export const Route = createFileRoute("/services/$slug")({
-  loader: ({ params }) => {
-    const svc = services.find((s) => s.slug === params.slug);
+  loader: async ({ params, context }) => {
+    const rows = await context.queryClient.ensureQueryData(servicesQuery());
+    const svc = rows.find((s) => s.slug === params.slug);
     if (!svc) throw notFound();
-    return svc;
+    return { ...svc, title: svc.title_en, desc: svc.desc_en };
   },
   head: ({ loaderData }) => ({
     meta: [
@@ -25,6 +28,8 @@ export const Route = createFileRoute("/services/$slug")({
 
 function ServiceDetail() {
   const svc = Route.useLoaderData();
+  const { data } = useQuery(servicesQuery());
+  const services = (data ?? []).map((row) => ({ slug: row.slug, title: row.title_en, desc: row.desc_en }));
 
   const benefits = [
     "Licensed & warrantied workmanship",

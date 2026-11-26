@@ -1,14 +1,20 @@
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { Phone, MessageCircle, ArrowRight, ChevronDown, ShieldCheck, Zap } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useRef } from "react";
 import heroImg from "@/assets/hero.jpg";
 import { useT } from "@/components/providers/language-provider";
 import { MagneticButton } from "@/components/site/magnetic-button";
-import { site } from "@/lib/site-config";
+import { defaultSiteSettings } from "@/lib/content/defaults";
+import { mediaUrl } from "@/lib/content/media";
+import { siteSettingsQuery } from "@/lib/content/query-options";
 
 export function Hero() {
   const { t } = useT();
+  const { data: settings } = useQuery(siteSettingsQuery());
+  const site = settings ?? defaultSiteSettings;
+  const heroSrc = mediaUrl(site.hero_image_path) ?? heroImg;
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], [0, 160]);
@@ -20,8 +26,9 @@ export function Hero() {
       {/* Background image */}
       <motion.div style={reduce ? undefined : { y }} className="absolute inset-0 -z-10">
         <img
-          src={heroImg}
+          src={heroSrc}
           alt=""
+          fetchPriority="high"
           width={1920}
           height={1280}
           className="h-full w-full object-cover opacity-40 dark:opacity-55"
